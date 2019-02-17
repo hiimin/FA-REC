@@ -5,6 +5,9 @@ import cv2
 import camera
 import os
 import numpy as np
+from gtts import gTTS
+import pygame
+import time
 
 class FaceRecog():
     def __init__(self):
@@ -33,11 +36,14 @@ class FaceRecog():
         self.face_encodings = []
         self.face_names = []
         self.process_this_frame = True
+        self.count = 0
+        self.start_time = 0
 
     def __del__(self):
         del self.camera
 
     def get_frame(self):
+        name = "Unknown"
         # Grab a single frame of video
         frame = self.camera.get_frame()
 
@@ -62,12 +68,41 @@ class FaceRecog():
 
                 # tolerance: How much distance between faces to consider it a match. Lower is more strict.
                 # 0.6 is typical best performance.
-                name = "Unknown"
                 if min_value < 0.4:
                     index = np.argmin(distances)
                     name = self.known_face_names[index]
 
                 self.face_names.append(name)
+    
+        # 1. face_names != "Unknown" 이면 pre_name = face_names
+        # 2. (2초 이상) pre_name = face_names 확인
+        # 3. 2번이 true이면 인증성공(말해주기)
+        if(name != "Unknown"):
+            if(self.count == 0):
+                self.start_time = time.time()
+                self.count = self.count+1
+            pre_name = name
+            between = (time.time() - self.start_time)*1000/60
+            if(between >= 2):
+                #########
+                print('TTS start')
+                tts = gTTS(name)
+                tts.save('obj.mp3')
+                print('TTS ok')
+                
+                print('pygame start')
+                pygame.init()
+                pygame.mixer.init()
+                obj_out = pygame.mixer.music.load('obj.mp3')
+                pygame.mixer.music.play()
+                pygame.event.wait()
+                print('pygame ok')
+                ############
+                
+                self.count = 0
+                self.start_time = 0
+                
+                #  버튼 추가
 
         self.process_this_frame = not self.process_this_frame
 
