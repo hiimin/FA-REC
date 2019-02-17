@@ -44,6 +44,7 @@ class FaceRecog():
 
     def get_frame(self):
         name = "Unknown"
+
         # Grab a single frame of video
         frame = self.camera.get_frame()
 
