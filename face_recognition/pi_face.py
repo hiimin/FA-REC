@@ -31,7 +31,7 @@ detector = cv2.CascadeClassifier(args["cascade"])
 # initialize the video stream and allow the camera sensor to warm up
 print("[INFO] starting video stream...")
 #vs = VideoStream(src=0).start()
-vs = VideoStream(usePiCamera=True).start()
+#vs = VideoStream(usePiCamera=True).start()
 time.sleep(2.0)
 
 # start the FPS counter
@@ -43,7 +43,14 @@ start_time = 0
 while True:
 	# grab the frame from the threaded video stream and resize it
 	# to 500px (to speedup processing)
-	frame = vs.read()
+	with picamera.PiCamera() as camera:
+    		camera.start_preview()
+    		GPIO.wait_for_edge(17, GPIO.FALLING)  # new
+    		camera.capture('/home/pi/Desktop/image.jpg')
+    		camera.stop_preview()
+	
+	#frame = vs.read() //동영상에서 프레임으로 읽을때 사용
+	frame = cv2.imread('image.jpg')
 	frame = imutils.resize(frame, width=500)
 	
 	# convert the input frame from (1) BGR to grayscale (for face
